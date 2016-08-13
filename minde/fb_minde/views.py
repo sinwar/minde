@@ -71,13 +71,15 @@ class mindeview(generic.View):
                             image_url = message['message']['attachments'][0]['payload']['url']
                             ptext= requests.get('http://api.havenondemand.com/1/api/async/ocrdocument/v1?apikey=d8023014-ab1d-4831-9b2f-7b9946932405&url='+image_url)
                             job=json.loads(ptext.text)
-                            data= requests.get('https://api.havenondemand.com/1/job/result/'+job['jobID']+'?apikey=d8023014-ab1d-4831-9b2f-7b9946932405')
+                            print job
+                            data= requests.get('http://api.havenondemand.com/1/job/result/%s?apikey=d8023014-ab1d-4831-9b2f-7b9946932405'%job['jobID'])
                             dataload=json.loads(data.text)
-                            impdata=((((dataload['actions'])[0]['result'])['text_block'])[0]['text'])
-                            text1=requests.get('http://api.meaningcloud.com/topics-2.0?key=26f841b83b15255990e9a1cfed9a47a9&of=json&lang=en&ilang=en&txt='+impdata+'&tt=a&uw=y')
-                            textp=json.loads(text1.text)
-                            for datetime in textp['time_expression_list']:
-                                print datetime['actual_time']
+                            print dataload
+                            # impdata=((((dataload['actions'])[0]['result'])['text_block'])[0]['text'])
+                            # text1=requests.get('http://api.meaningcloud.com/topics-2.0?key=26f841b83b15255990e9a1cfed9a47a9&of=json&lang=en&ilang=en&txt='+impdata+'&tt=a&uw=y')
+                            #textp=json.loads(text1.text)
+                            #for datetime in textp['time_expression_list']:
+                            #   print datetime['actual_time']
 
 
                         
