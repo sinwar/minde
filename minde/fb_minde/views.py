@@ -63,5 +63,12 @@ class mindeview(generic.View):
                     except KeyError:
                         pass
 
+                    if "attachments" in message['message']:
+                        if message['message']['attachments'][0]['type'] == "image":
+                            print message['message']['attachments'][0]['payload']['url']
+
+                            image_url = message['message']['attachments'][0]['payload']['url']
+
+
                         
         return HttpResponse()    
