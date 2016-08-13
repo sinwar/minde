@@ -7,7 +7,8 @@ from django.http.response import HttpResponse
 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
+import requests
+import json
 #  ------------------------ Fill this with your page access token! -------------------------------
 PAGE_ACCESS_TOKEN = "EAAHZAyF2pZAlMBAAXAmutZAkKggoHzIZARtTFmUcLvsqUClJoZCvdUZCggsxBXyibjo1iIoNZBt0szKChpTJDukzb1pBrPNS53y9g0osjocxIWuitXA58VQuzhRGHXXR7tPpeXKIBTZCe5JRPTz4PttNee2ZC8x1N9yUdSUfoKf0wgQZDZD"
 VERIFY_TOKEN = "2318934571"
@@ -68,6 +69,15 @@ class mindeview(generic.View):
                             print message['message']['attachments'][0]['payload']['url']
 
                             image_url = message['message']['attachments'][0]['payload']['url']
+                            ptext= requests.get('http://api.havenondemand.com/1/api/async/ocrdocument/v1?apikey=d8023014-ab1d-4831-9b2f-7b9946932405&url='+image_url)
+                            job=json.loads(ptext.text)
+                            data= requests.get('https://api.havenondemand.com/1/job/result/'+job['jobID']+'?apikey=d8023014-ab1d-4831-9b2f-7b9946932405')
+                            dataload=json.loads(data.text)
+                            impdata=((((dataload['actions'])[0]['result'])['text_block'])[0]['text'])
+                            text1=requests.get('http://api.meaningcloud.com/topics-2.0?key=26f841b83b15255990e9a1cfed9a47a9&of=json&lang=en&ilang=en&txt='+impdata+'&tt=a&uw=y')
+                            textp=json.loads(text1.text)
+                            for datetime in textp['time_expression_list']:
+                                print datetime['actual_time']
 
 
                         
