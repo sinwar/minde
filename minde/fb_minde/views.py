@@ -26,13 +26,6 @@ jokes = { 'stupid': ["""Yo' Mama is so stupid, she needs a recipe to make ice cu
          'dumb': ["""Yo' Mama is so dumb, when God was giving out brains, she thought they were milkshakes and asked for extra thick.""", 
                   """Yo' Mama is so dumb, she locked her keys inside her motorcycle."""] }
 
-import dropbox
-
-# Get your app key and secret from the Dropbox developer website
-app_key = 'votukhdxknf5s5a'
-app_secret = '9g5kt44youwub4z'
-
-flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
 
 # Helper function
 def post_facebook_message(fbid, recevied_message):           
@@ -83,7 +76,11 @@ class mindeview(generic.View):
                         senderid = message['sender']['id']
                         if senderid != 860649504016574:
                             pprint(message)
-                        # post_facebook_message(senderid, message['message']['text'])
+                            try:
+                                text = message['message']['text']
+                                # post_facebook_message(senderid, message['message']['text'])
+                            except KeyError:
+                                pass
                     except KeyError:
                         pass
 
@@ -143,3 +140,21 @@ class mindeview(generic.View):
 
                         
         return HttpResponse()    
+
+
+def send_reminders(self):
+    all_reminders = reminders.objects.all()
+
+    for i in all_reminders:
+        event_date = i.remindertime
+        event_date = datetime.strptime(event_date)
+        nowdate = datetime.now()
+        senderid = i.receiverid
+        if (event_date-nowdate).days == 1:
+            if i.reminderalarm == False:
+                reminder_message = "Upcoming event " + i.reminderdata + "on" + i.remindertime
+                i.reminderalarm = True
+                i.save()
+                post_facebook_message(senderid, reminder_message)   
+            
+
