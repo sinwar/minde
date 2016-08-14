@@ -1,7 +1,7 @@
 
 import json, requests, random, re
 from pprint import pprint
-
+from .models import reminders   
 from django.views import generic
 from django.http.response import HttpResponse
 
@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import requests
 import json
+import urllib
 #  ------------------------ Fill this with your page access token! -------------------------------
 PAGE_ACCESS_TOKEN = "EAAHZAyF2pZAlMBAAXAmutZAkKggoHzIZARtTFmUcLvsqUClJoZCvdUZCggsxBXyibjo1iIoNZBt0szKChpTJDukzb1pBrPNS53y9g0osjocxIWuitXA58VQuzhRGHXXR7tPpeXKIBTZCe5JRPTz4PttNee2ZC8x1N9yUdSUfoKf0wgQZDZD"
 VERIFY_TOKEN = "2318934571"
@@ -20,6 +21,14 @@ jokes = { 'stupid': ["""Yo' Mama is so stupid, she needs a recipe to make ice cu
          'dumb': ["""Yo' Mama is so dumb, when God was giving out brains, she thought they were milkshakes and asked for extra thick.""", 
                   """Yo' Mama is so dumb, she locked her keys inside her motorcycle."""] }
 
+import dropbox
+
+# Get your app key and secret from the Dropbox developer website
+app_key = 'votukhdxknf5s5a'
+app_secret = '9g5kt44youwub4z'
+
+flow = dropbox.client.DropboxOAuth2FlowNoRedirect(app_key, app_secret)
+
 # Helper function
 def post_facebook_message(fbid, recevied_message):           
     post_message_url = 'https://graph.facebook.com/v2.6/me/messages?access_token=EAAHZAyF2pZAlMBAAXAmutZAkKggoHzIZARtTFmUcLvsqUClJoZCvdUZCggsxBXyibjo1iIoNZBt0szKChpTJDukzb1pBrPNS53y9g0osjocxIWuitXA58VQuzhRGHXXR7tPpeXKIBTZCe5JRPTz4PttNee2ZC8x1N9yUdSUfoKf0wgQZDZD' 
@@ -27,6 +36,14 @@ def post_facebook_message(fbid, recevied_message):
     status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
     pprint(status.json())
 
+
+# Post function to handle Facebook messages
+def short_url(url):
+    post_url = 'https://www.googleapis.com/urlshortener/v1/url?key=AIzaSyB0N1UrT-OxThltr9Lr1bb1IeCuYma-rro'
+    params = json.dumps({'longUrl': url})
+    response = requests.post(post_url,params,headers={'Content-Type': 'application/json'})
+    response1=json.loads(response.text)
+    return response1['id']
 # Create your views here.
 class mindeview(generic.View):
     def get(self, request, *args, **kwargs):
@@ -39,7 +56,8 @@ class mindeview(generic.View):
     def dispatch(self, request, *args, **kwargs):
         return generic.View.dispatch(self, request, *args, **kwargs)
 
-    # Post function to handle Facebook messages
+
+
     def post(self, request, *args, **kwargs):
         # Converts the text payload into a python dictionary
         incoming_message = json.loads(self.request.body.decode('utf-8'))
@@ -57,10 +75,10 @@ class mindeview(generic.View):
 
                     # if images or extra achievements will be added in attachmetns 
                     try:
-                        sender = message['sender']['id']
-                        if sender != 860649504016574:
+                        senderid = message['sender']['id']
+                        if senderid != 860649504016574:
                             pprint(message)
-                        post_facebook_message(sender, message['message']['text'])
+                        post_facebook_message(senderid, message['message']['text'])
                     except KeyError:
                         pass
 
@@ -69,17 +87,40 @@ class mindeview(generic.View):
                             print message['message']['attachments'][0]['payload']['url']
 
                             image_url = message['message']['attachments'][0]['payload']['url']
-                            ptext= requests.get('http://api.havenondemand.com/1/api/async/ocrdocument/v1?apikey=d8023014-ab1d-4831-9b2f-7b9946932405&url='+image_url)
+                            print image_url
+                            # bitapi = requests.get('https://api-ssl.bitly.com/v3/shorten?access_token=7b695710814d6c5ae58e8d5db6bd4c0ba7be2085&longUrl='+image_url)
+                            # biturl = json.loads(bitapi.text)
+                            # short_url= biturl['data']['url']
+                            short_img_url = short_url(image_url)
+                            correct_url = 'http://api.havenondemand.com/1/api/async/ocrdocument/v1?apikey=d8023014-ab1d-4831-9b2f-7b9946932405&url='+short_img_url
+                            print correct_url
+                            ptext= requests.get(correct_url)
                             job=json.loads(ptext.text)
                             print job
-                            data= requests.get('http://api.havenondemand.com/1/job/result/%s?apikey=d8023014-ab1d-4831-9b2f-7b9946932405'%job['jobID'])
+                            data= requests.get('http://api.havenondemand.com/1/job/result/%s?apikey=d8023014-ab1d-4831-9b2f-7b9946932405' %job['jobID'])
                             dataload=json.loads(data.text)
                             print dataload
-                            # impdata=((((dataload['actions'])[0]['result'])['text_block'])[0]['text'])
-                            # text1=requests.get('http://api.meaningcloud.com/topics-2.0?key=26f841b83b15255990e9a1cfed9a47a9&of=json&lang=en&ilang=en&txt='+impdata+'&tt=a&uw=y')
-                            #textp=json.loads(text1.text)
-                            #for datetime in textp['time_expression_list']:
-                            #   print datetime['actual_time']
+                            try:
+                                impdata=((((dataload['actions'])[0]['result'])['text_block'])[0]['text'])
+                            except KeyError:
+                                pass
+
+                            text1=requests.get('http://api.meaningcloud.com/topics-2.0?key=26f841b83b15255990e9a1cfed9a47a9&of=json&lang=en&ilang=en&txt='+impdata+'&tt=a&uw=y')
+                            textp=json.loads(text1.text)
+
+                            print textp['time_expression_list']
+
+
+                            
+                            for t in textp['time_expression_list']:
+                                if t['precision'] == "day" || t['precision'] == "weekday":
+                                   dates = t['actual_time']
+                                else:
+                                    time_poster = t['actual_time']
+
+                            
+                            # rtime = 
+                            # k = reminders.objects.save(receiverid=senderid, remindertime=rtime, reminder=reminderdata)
 
 
                         
