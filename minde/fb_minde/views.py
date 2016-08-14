@@ -115,12 +115,14 @@ class mindeview(generic.View):
 
                             
                             for t in textp['time_expression_list']:
+                                rtime = ""
                                 if t['precision'] == "day" or t['precision'] == "weekday":
                                    dates = t['actual_time']
                                    tim = "08:33:54.227806"
-                                   rtime = dates + rtime
+                                   rtime = dates
                                    # rtime = datetime.strptime(rtime, "%Y-%m-%d %H:%M:%S.%f")
 
+                                """
                                 else:
                                     dates = datetime.now()
                                     rtime = dates.strftime("%Y-%m-%d")
@@ -128,33 +130,37 @@ class mindeview(generic.View):
                                     time_poster = time_poster.split(" ")
                                     rtime = rtime + " " + time_poster[0]
                                     # rtime = datetime.strptime(rtime, "%Y-%m-%d %H:%M:%S.%f")
-                            
-                            try:
-                                reminderdata = textp['relation_list'][0]['form']
-                            except KeyError:
-                                reminderdata = " No information"
+                                """
+                            #try:
+                            #    reminderdata = textp['relation_list'][0]['form']
+                            #except KeyError:
+                            reminderdata = " No information"
 
 
                             k = reminders.objects.create(receiverid=senderid, remindertime=rtime, reminder=reminderdata)
+                            post_facebook_message(senderid, "your reminder is set for this event")
 
 
                         
         return HttpResponse()    
 
 
-def send_reminders(self):
+while 1: 
     all_reminders = reminders.objects.all()
 
     for i in all_reminders:
         event_date = i.remindertime
-        event_date = datetime.strptime(event_date)
-        nowdate = datetime.now()
+        print event_date
+        event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        nowdate = datetime.now().date()
+        print nowdate
         senderid = i.receiverid
-        if (event_date-nowdate).days == 1:
-            if i.reminderalarm == False:
-                reminder_message = "Upcoming event " + i.reminderdata + "on" + i.remindertime
-                i.reminderalarm = True
-                i.save()
-                post_facebook_message(senderid, reminder_message)   
-            
+        #print i.reminderalarm
+        if event_date < nowdate:
+            print "chutiya"
+            reminder_message = "Upcoming event " + i.reminderdata + "on" + i.remindertime
+            post_facebook_message(senderid, reminder_message)
+            print reminder_message
+    
+    time.sleep(5)        
 
