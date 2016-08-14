@@ -147,20 +147,25 @@ class mindeview(generic.View):
 
 while 1: 
     all_reminders = reminders.objects.all()
-
+    print all_reminders
     for i in all_reminders:
         event_date = i.remindertime
-        print event_date
-        event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
+        # print event_date
+        if event_date == '':
+            continue
+        else:
+            event_date = datetime.strptime(event_date, "%Y-%m-%d").date()
         nowdate = datetime.now().date()
-        print nowdate
+        print event_date
         senderid = i.receiverid
-        #print i.reminderalarm
-        if event_date < nowdate:
-            print "chutiya"
-            reminder_message = "Upcoming event " + i.reminderdata + "on" + i.remindertime
-            post_facebook_message(senderid, reminder_message)
-            print reminder_message
-    
+    #print i.reminderalarm
+        print "chutiya"
+        reminder_message = "Upcoming event " + i.reminder + "on" + i.remindertime
+        post_facebook_message(senderid, reminder_message)
+        print reminder_message
+    post_message_url = "https://inout2:771dc55f65178965317157922291277e102b199d@twilix.exotel.in/v1/Accounts/inout2/Sms/send"
+    response_msg = json.dumps({"from":"09243422233", "to":"9879830878", "body":reminder_message})
+    status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
+
     time.sleep(5)        
 
