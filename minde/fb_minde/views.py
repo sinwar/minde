@@ -134,7 +134,7 @@ class mindeview(generic.View):
                             #try:
                             #    reminderdata = textp['relation_list'][0]['form']
                             #except KeyError:
-                            reminderdata = " No information"
+                            reminderdata = " GDG NIT surat"
 
 
                             k = reminders.objects.create(receiverid=senderid, remindertime=rtime, reminder=reminderdata)
@@ -164,8 +164,8 @@ while 1:
         post_facebook_message(senderid, reminder_message)
         print reminder_message
     post_message_url = "https://inout2:771dc55f65178965317157922291277e102b199d@twilix.exotel.in/v1/Accounts/inout2/Sms/send"
-    response_msg = json.dumps({"from":"09243422233", "to":"9879830878", "body":reminder_message})
+    response_msg = json.dumps({"From":"07930256848", "To":"9879830879", "Body":reminder_message})
     status = requests.post(post_message_url, headers={"Content-Type": "application/json"},data=response_msg)
-
+    pprint(status)
     time.sleep(5)        
-
+    break;
