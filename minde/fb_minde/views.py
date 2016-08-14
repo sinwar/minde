@@ -10,6 +10,11 @@ from django.utils.decorators import method_decorator
 import requests
 import json
 import urllib
+
+import moment
+from datetime import datetime
+import time
+
 #  ------------------------ Fill this with your page access token! -------------------------------
 PAGE_ACCESS_TOKEN = "EAAHZAyF2pZAlMBAAXAmutZAkKggoHzIZARtTFmUcLvsqUClJoZCvdUZCggsxBXyibjo1iIoNZBt0szKChpTJDukzb1pBrPNS53y9g0osjocxIWuitXA58VQuzhRGHXXR7tPpeXKIBTZCe5JRPTz4PttNee2ZC8x1N9yUdSUfoKf0wgQZDZD"
 VERIFY_TOKEN = "2318934571"
@@ -78,7 +83,7 @@ class mindeview(generic.View):
                         senderid = message['sender']['id']
                         if senderid != 860649504016574:
                             pprint(message)
-                        post_facebook_message(senderid, message['message']['text'])
+                        # post_facebook_message(senderid, message['message']['text'])
                     except KeyError:
                         pass
 
@@ -113,14 +118,27 @@ class mindeview(generic.View):
 
                             
                             for t in textp['time_expression_list']:
-                                if t['precision'] == "day" || t['precision'] == "weekday":
+                                if t['precision'] == "day" or t['precision'] == "weekday":
                                    dates = t['actual_time']
-                                else:
-                                    time_poster = t['actual_time']
+                                   tim = "08:33:54.227806"
+                                   rtime = dates + rtime
+                                   # rtime = datetime.strptime(rtime, "%Y-%m-%d %H:%M:%S.%f")
 
+                                else:
+                                    dates = datetime.now()
+                                    rtime = dates.strftime("%Y-%m-%d")
+                                    time_poster = t['actual_time']
+                                    time_poster = time_poster.split(" ")
+                                    rtime = rtime + " " + time_poster[0]
+                                    # rtime = datetime.strptime(rtime, "%Y-%m-%d %H:%M:%S.%f")
                             
-                            # rtime = 
-                            # k = reminders.objects.save(receiverid=senderid, remindertime=rtime, reminder=reminderdata)
+                            try:
+                                reminderdata = textp['relation_list'][0]['form']
+                            except KeyError:
+                                reminderdata = " No information"
+
+
+                            k = reminders.objects.create(receiverid=senderid, remindertime=rtime, reminder=reminderdata)
 
 
                         
